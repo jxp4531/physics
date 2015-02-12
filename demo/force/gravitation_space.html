@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>xy</title>
+        <style type="text/css">
+        *{margin:0;padding:0;}
+        canvas{display:block;margin:10px auto 0;}
+    </style>
+    <script src="../lib/lufylegend-1.9.7.min.js"></script>
+    <script src="../lib/vector2.js"></script>
+</head>
+<body>
+<div id="js-test">loading</div>
+<script>
+    //描述圆形的位置向量
+    var pos = new Vector2 (200, 0);
+    //速度
+    var vel = new Vector2 (3, 0);
+    //气体摩擦
+    var friction = 0;
+
+    var anchor = new Vector2 (200, 200);
+
+    var strength = 2000;
+
+    var shape;
+
+    function main () {
+        var backLayer = new LSprite();
+        backLayer.graphics.drawRect(1,"#fff",[0,0,600,400],true,"#fff");
+        addChild(backLayer);
+
+        shape = new LShape();
+        shape.graphics.drawArc(1, "#000000", [0, 0, 20, 0, 2*Math.PI], true, "#880088");
+        backLayer.addChild(shape);
+
+        backLayer.addEventListener(LEvent.ENTER_FRAME,onframe);
+        backLayer.addEventListener(LMouseEvent.MOUSE_DOWN,onMouseDown);
+    }
+
+    function onframe(event){
+        doForce();
+        move();    
+    }
+
+
+    function doForce() {
+        //用圆形的位置向量，减去定位点向量，得到位移向量
+        netForce = pos.minusNew (anchor);
+        //计算位移向量的长度，得出定位点和对象位置之间的距离
+        var r = netForce.length();
+        //依据引力公式计算引力
+        netForce.setLength (-strength / (r*r));
+    }
+
+    function move() {
+        vel.plus (netForce);
+        //vel.multiplyScalar(1 - friction);
+        pos.plus (vel);
+        shape.x = pos.x;
+        shape.y = pos.y;
+    }
+
+    function onMouseDown(e) {
+        anchor.reset (mouseX,mouseY);
+        console.log(mouseX,mouseY);
+    }
+    //初始化引擎，第一个参数是循环的间隔，比如setInterval，循环的间隔 = 1000/FPS
+    LInit(10,"js-test",600,400,main);
+
+</script>
+</body>
+</html>

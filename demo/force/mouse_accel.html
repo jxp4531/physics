@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>xy</title>
+        <style type="text/css">
+        *{margin:0;padding:0;}
+        canvas{display:block;margin:10px auto 0;}
+    </style>
+    <script src="../lib/easeljs-0.8.0.min.js"></script>
+    <script src="../lib/vector2.js"></script>
+</head>
+<body>
+<canvas id="gameCanvas" width="640" height="960"></canvas>
+<script>
+    //描述圆形的位置向量
+    var pos = new Vector2 (100, 100);
+    //速度
+    var vel = new Vector2 (0, 0);
+    //加速度
+    var accel = new Vector2 (1, 1);
+
+    var stage;
+    var target;
+
+
+    function main () {
+        stage = new createjs.Stage("gameCanvas");
+
+
+        target = new createjs.Shape(new createjs.Graphics().beginFill("#999999").drawCircle(0, 0, 20));
+
+        stage.addChild(target);
+
+
+        createjs.Ticker.framerate = 60;
+       
+        createjs.Ticker.addEventListener("tick", onmove);
+        stage.addEventListener("stagemousemove", onmove);
+    }
+
+    
+
+    function onmove(event){
+        move(event);
+        stage.update();
+    }
+
+    function move(event) {
+        var xy = target.globalToLocal(stage.mouseX, stage.mouseY);
+       // console.log(xy.x, xy.y);
+        accel.reset (xy.x/80, xy.y/80);
+        vel.plus (accel);
+        pos.plus (vel);
+
+        target.x = pos.x;
+        target.y = pos.y;
+    }
+
+    main();
+
+</script>
+</body>
+</html>

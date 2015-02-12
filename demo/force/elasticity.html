@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>xy</title>
+        <style type="text/css">
+        *{margin:0;padding:0;}
+        canvas{display:block;margin:10px auto 0;}
+    </style>
+    <script src="../lib/lufylegend-1.9.7.min.js"></script>
+    <script src="../lib/vector2.js"></script>
+</head>
+<body>
+<div id="js-test">loading</div>
+<script>
+    //描述圆形的位置向量
+    var pos;
+    //速度
+    var vel = new Vector2 (0, 0);
+    //气体摩擦
+    var friction = 0.9;
+
+    //圆形的默认最终定位点，为了方便演示，这里的坐标设置为canvas坐标系，y坐标为正
+    var anchor = new Vector2 (150, 100);
+    //弹性系数
+    var tautness = 0.25;
+    //弹性力向量netForce
+    var netForce;
+    //圆形对象
+    var shape;
+
+    function main () {
+        var backLayer = new LSprite();
+        backLayer.graphics.drawRect(1,"#fff",[0,0,600,400],true,"#fff");
+        addChild(backLayer);
+
+        shape = new LShape();
+        shape.graphics.drawArc(1, "#000000", [40, 40, 40, 0, 2*Math.PI], true, "#880088");
+        backLayer.addChild(shape);
+
+        //初始化圆形的位置向量
+        pos = new Vector2 (shape.x, shape.y);
+
+        backLayer.addEventListener(LEvent.ENTER_FRAME,onframe);
+        backLayer.addEventListener(LMouseEvent.MOUSE_DOWN,onMouseDown);
+    }
+
+    function onframe(event){
+        doForce();
+        move();    
+    }
+
+    //计算弹性力
+    function doForce() {
+        //用圆形的位置向量，减去定位点向量，得到位移向量
+        netForce = pos.minusNew (anchor);
+        console.log(pos);
+        //胡克的弹性定律指出：弹簧在发生弹性形变时，弹簧的弹力Ff和弹簧的伸长量（或压缩量）x成正比，即F= -k·x。k是物质的弹性系数，它由材料的性质所决定，越大越难拉，负号表示弹簧所产生的弹力与其伸长（或压缩）的方向相反。
+        //这里的k是tautness变量，x是位移netForce向量
+        //依据公司计算出弹性力向量netForce
+        netForce.multiplyScalar (-tautness);
+        //console.log(netForce);//打印后，可以看到，无论是哪个方向，弹性力是越来越小，直到为0
+    }
+
+    //圆形开始向新的地点挪动
+    //遵循牛顿定律，小技巧，可以根据顺序，力，合力，加速度，速度，位置来实现动画
+    function move() {
+        //首先把速度和弹性力相加，然后再计算出气体摩擦力，最后跟位置相加
+        vel.plus (netForce);
+        vel.multiplyScalar(friction);
+        pos.plus (vel);
+        //console.log(vel);
+        //赋值给圆形，由于用的是canvas坐标，所以Y不用取负值
+        shape.x = pos.x;
+        shape.y = pos.y;
+    }
+
+    function onMouseDown(e) {
+        //点击鼠标，重新设置定位点，圆形回向定位点加速运动，并超过定位点，然后来回震荡，并逐渐停下来
+        anchor.reset (mouseX,mouseY);
+    }
+    //初始化引擎，第一个参数是循环的间隔，比如setInterval，循环的间隔 = 1000/FPS
+    LInit(10,"js-test",600,400,main);
+
+</script>
+</body>
+</html>
